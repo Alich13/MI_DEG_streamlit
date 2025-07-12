@@ -1,8 +1,6 @@
-import streamlit as st
-import pandas as pd
-import plotly.express as px
-import numpy as np
-from pathlib import Path
+
+
+from aux import *
 
 
 # streamlit run deg_mi_visualizer.py
@@ -10,174 +8,6 @@ from pathlib import Path
 # It allows users to upload an Excel file containing merged DEG and MI data,
 # filter the data, and create various scatter plots with options for gene annotations.
 
-
-# Set page configuration
-st.set_page_config(
-    page_title="DEG vs MI Visualizer",
-    page_icon="📊",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-def load_data(file_path):
-    """Load data from Excel file"""
-    try:
-        # Try to load the first sheet (usually 'sorted_by_pval')
-        df = pd.read_excel(file_path, sheet_name=0, index_col=0)
-        return df
-    except Exception as e:
-        st.error(f"Error loading file: {str(e)}")
-        return None
-
-def create_mitocarta_scatter(df, title_suffix="", genes_to_annotate=None):
-    """Create scatter plot with MitoCarta genes highlighted in red"""
-    # Use provided genes or default list
-    if genes_to_annotate is None:
-        genes_to_annotate = ['Klra4', 'Jchain', 'Ighg2b', 'Bank1', 'mt-Nd3']
-    
-    fig = px.scatter(
-        df,
-        x='MI_with_condition',
-        y='avg_log2FC',
-        color=df['is_mitocarta'].map({1: 'MitoCarta', 0: 'Other'}),
-        color_discrete_map={'MitoCarta': 'red', 'Other': 'blue'},
-        hover_data={
-            'gene': df.index, 
-            'p_val_adj': True, 
-            'p_val': True, 
-            'is_mitocarta': True,
-            'Il10': True,
-            'pct_ratio': True,
-            'pct.1': True,
-            'pct.2': True
-        },
-        labels={
-            'MI_with_condition': 'Mutual Information (condition)', 
-            'avg_log2FC': 'Average log2 Fold Change'
-        },
-        title=f'Scatter plot of MI vs avg_log2FC (MitoCarta genes in red) {title_suffix}'
-    )
-    
-    # Add text annotations for selected genes
-    for gene in genes_to_annotate:
-        if gene in df.index:
-            row = df.loc[gene]
-            fig.add_annotation(
-                x=row['MI_with_condition'],
-                y=row['avg_log2FC'],
-                text=gene,
-                showarrow=True,
-                arrowhead=1,
-                ax=20,
-                ay=-20,
-                font=dict(color="black", size=12)
-            )
-    
-    return fig
-
-def create_pct_ratio_scatter(df, title_suffix=""):
-    """Create scatter plot colored by pct_ratio"""
-    fig = px.scatter(
-        df,
-        x='MI_with_condition',
-        y='avg_log2FC',
-        color='pct_ratio',
-        color_continuous_scale=px.colors.sequential.Sunset,
-        hover_data={
-            'gene': df.index, 
-            'p_val_adj': True, 
-            'p_val': True, 
-            'is_mitocarta': True,
-            'Il10': True,
-            'pct_ratio': True,
-            'pct.1': True,
-            'pct.2': True
-        },
-        labels={
-            'MI_with_condition': 'Mutual Information (condition)', 
-            'avg_log2FC': 'Average log2 Fold Change'
-        },
-        title=f'Scatter plot of MI vs avg_log2FC (colored by pct_ratio) {title_suffix}'
-    )
-    return fig
-
-def create_volcano_mi_scatter(df, title_suffix=""):
-    """Create volcano-style plot colored by MI"""
-    fig = px.scatter(
-        df,
-        y='p_val_adj_log10',
-        x='avg_log2FC',
-        color='MI_with_condition',
-        color_continuous_scale=px.colors.sequential.Sunset,
-        hover_data={
-            'gene': df.index, 
-            'p_val_adj': True, 
-            'p_val': True,
-            'Il10': True,
-            'pct_ratio': True,
-            'pct.1': True,
-            'pct.2': True
-        },
-        labels={
-            'MI_with_condition': 'Mutual Information (condition)', 
-            'avg_log2FC': 'Average log2 Fold Change',
-            'p_val_adj_log10': '-log10(adjusted p-value)'
-        },
-        title=f'Volcano plot colored by MI {title_suffix}'
-    )
-    return fig
-
-def create_volcano_il10_scatter(df, title_suffix=""):
-    """Create volcano-style plot colored by IL10"""
-    fig = px.scatter(
-        df,
-        y='p_val_adj_log10',
-        x='avg_log2FC',
-        color='Il10',
-        color_continuous_scale=px.colors.sequential.Sunset,
-        hover_data={
-            'gene': df.index, 
-            'p_val_adj': True, 
-            'p_val': True,
-            'Il10': True,
-            'pct_ratio': True,
-            'pct.1': True,
-            'pct.2': True
-        },
-        labels={
-            'MI_with_condition': 'Mutual Information (condition)', 
-            'avg_log2FC': 'Average log2 Fold Change',
-            'p_val_adj_log10': '-log10(adjusted p-value)'
-        },
-        title=f'Volcano plot colored by IL10 {title_suffix}'
-    )
-    return fig
-
-def create_volcano_pct_ratio_scatter(df, title_suffix=""):
-    """Create volcano-style plot colored by pct_ratio"""
-    fig = px.scatter(
-        df,
-        y='p_val_adj_log10',
-        x='avg_log2FC',
-        color='pct_ratio',
-        color_continuous_scale=px.colors.sequential.Sunset,
-        hover_data={
-            'gene': df.index, 
-            'p_val_adj': True, 
-            'p_val': True,
-            'Il10': True,
-            'pct_ratio': True,
-            'pct.1': True,
-            'pct.2': True
-        },
-        labels={
-            'MI_with_condition': 'Mutual Information (condition)', 
-            'avg_log2FC': 'Average log2 Fold Change',
-            'p_val_adj_log10': '-log10(adjusted p-value)'
-        },
-        title=f'Volcano plot colored by pct_ratio {title_suffix}'
-    )
-    return fig
 
 def main():
     st.title("📊 DEG vs MI Visualizer")
@@ -327,22 +157,6 @@ def main():
                 st.subheader("Volcano Plot - Colored by Percentage Ratio")
                 fig5 = create_volcano_pct_ratio_scatter(filtered_df, f"(n={len(filtered_df)})")
                 st.plotly_chart(fig5, use_container_width=True)
-            
-            # Display summary statistics
-            st.header("📋 Summary Statistics")
-            col1, col2 = st.columns(2)
-            
-            with col1:
-                st.subheader("MitoCarta Genes")
-                mitocarta_count = filtered_df['is_mitocarta'].sum()
-                st.metric("Count", mitocarta_count)
-                st.metric("Percentage", f"{mitocarta_count/len(filtered_df)*100:.1f}%")
-                
-            with col2:
-                st.subheader("Key Statistics")
-                st.metric("Mean MI", f"{filtered_df['MI_with_condition'].mean():.3f}")
-                st.metric("Mean log2FC", f"{filtered_df['avg_log2FC'].mean():.3f}")
-                st.metric("Median p-val", f"{filtered_df['p_val_adj'].median():.2e}")
             
             # Show data preview
             with st.expander("🔍 Data Preview"):

@@ -63,7 +63,7 @@ def main():
                 "Maximum adjusted p-value",
                 min_value=0.0,
                 max_value=1.0,
-                value=1.0,
+                value=0.05,
                 step=0.001
             )
             
@@ -130,25 +130,6 @@ def main():
             # print small values as 10-n
             st.subheader("Data Preview")
             filtered_df_display = filtered_df.copy()
-            
-            # Format small values in 'p_val_adj' as 10^-n (only for display)
-            if 'p_val_adj' in filtered_df_display.columns:
-                filtered_df_display['p_val_adj_formatted'] = filtered_df_display['p_val_adj'].apply(
-                    lambda x: f"10^-{int(-np.log10(x))}" if (x < 0.01 and x > 0) else f"{x:.3f}"
-                )
-                # Remove original column and rename formatted one
-                filtered_df_display = filtered_df_display.drop('p_val_adj', axis=1)
-                filtered_df_display = filtered_df_display.rename(columns={'p_val_adj_formatted': 'p_val_adj'})
-            
-            # Format p_val as 10^-n (only for display)
-            if 'p_val' in filtered_df_display.columns:
-                filtered_df_display['p_val_formatted'] = filtered_df_display['p_val'].apply(
-                    lambda x: f"10^-{int(-np.log10(x))}" if (x < 0.01 and x > 0) else f"{x:.3f}"
-                )
-                # Remove original column and rename formatted one
-                filtered_df_display = filtered_df_display.drop('p_val', axis=1)
-                filtered_df_display = filtered_df_display.rename(columns={'p_val_formatted': 'p_val'})
-
             # Display the filtered DataFrame
             st.dataframe(filtered_df_display)
             # print df size

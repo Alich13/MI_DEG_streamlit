@@ -28,7 +28,7 @@ def main():
         if df is not None:
             st.success(f"✅ Successfully loaded data with {len(df)} genes")
             # fill NaN values in 'p_val_adj' with 1.0
-            df['p_val_adj'] = df['p_val_adj'].fillna(1.0)
+            df['p_val_adj_N6'] = df['p_val_adj_N6'].fillna(1.0)
 
 
             
@@ -38,7 +38,7 @@ def main():
             st.sidebar.write(f"**Columns:** {len(df.columns)}")
             
             # Check for required columns
-            required_columns = ['MI_with_condition', 'avg_log2FC', 'is_mitocarta', 'p_val_adj_log10', 'Il10', 'pct_ratio']
+            required_columns = ['MI_with_condition', 'avg_log2FC_N6', 'is_mitocarta', 'p_val_adj_log10_N6', 'Il10', 'pct_ratio_N6']
             missing_columns = [col for col in required_columns if col not in df.columns]
             
             if missing_columns:
@@ -110,16 +110,16 @@ def main():
             # Apply filters
             filtered_df = df[
                 (df['MI_with_condition'] >= mi_min) & 
-                (df['p_val_adj'] <= pval_max)
+                (df['p_val_adj_N6'] <= pval_max)
             ]
             
             # Apply regulation filter
             if regulation_filter == "Up-regulated only":
-                filtered_df = filtered_df[filtered_df['avg_log2FC'] > 0]
-                filtered_df = filtered_df.sort_values(by="avg_log2FC", ascending=False)
+                filtered_df = filtered_df[filtered_df['avg_log2FC_N6'] > 0]
+                filtered_df = filtered_df.sort_values(by="avg_log2FC_N6", ascending=False)
             elif regulation_filter == "Down-regulated only":
-                filtered_df = filtered_df[filtered_df['avg_log2FC'] < 0]
-                filtered_df = filtered_df.sort_values(by="avg_log2FC", ascending=True)
+                filtered_df = filtered_df[filtered_df['avg_log2FC_N6'] < 0]
+                filtered_df = filtered_df.sort_values(by="avg_log2FC_N6", ascending=True)
             # If "Both" is selected, no additional filtering is needed
             
             st.sidebar.write(f"**Filtered genes:** {len(filtered_df)}")
@@ -166,14 +166,14 @@ def main():
             ])
             
             with tab0:
-                
-                fig1 = scatter_highlight(filtered_df, f"(n={len(filtered_df)})", genes_to_annotate, selected_binary_column,x='avg_log2FC', y='p_val_adj_log10')
+
+                fig1 = scatter_highlight(filtered_df, f"(n={len(filtered_df)})", genes_to_annotate, selected_binary_column,x='avg_log2FC_N6', y='p_val_adj_log10_N6')
                 st.plotly_chart(fig1, use_container_width=True)
 
 
             with tab1:
                 
-                fig1 = scatter_highlight(filtered_df, f"(n={len(filtered_df)})", genes_to_annotate, selected_binary_column, x='MI_with_condition', y='avg_log2FC')
+                fig1 = scatter_highlight(filtered_df, f"(n={len(filtered_df)})", genes_to_annotate, selected_binary_column, x='MI_with_condition', y='avg_log2FC_N6')
                 st.plotly_chart(fig1, use_container_width=True)
 
             with tab1_bis:

@@ -23,7 +23,7 @@ def load_data(file_path):
         st.error(f"Error loading file: {str(e)}")
         return None
 
-def scatter_highlight(df, title_suffix="", genes_to_annotate=None, binary_column=None, y='avg_log2FC', x='MI_with_condition'):
+def scatter_highlight(df, title_suffix="", genes_to_annotate=None, binary_column=None, y='avg_log2FC_N6', x='MI_with_condition'):
     """Create scatter plot with selected binary column highlighted in different colors"""
 
     # If no binary column selected, use default MitoCarta
@@ -50,12 +50,12 @@ def scatter_highlight(df, title_suffix="", genes_to_annotate=None, binary_column
         color_discrete_map=color_map,
         hover_data={
             'gene': df.index, 
-            'p_val_adj': True, 
+            'p_val_adj_N6': True, 
             'Il10': True,
             'Il6': True,
-            'pct_ratio': True,
-            'pct.1': True,
-            'pct.2': True
+            'pct_ratio_N6': True,
+            'pct.1_N6': True,
+            'pct.2_N6': True
         },
         labels={
             x: x.replace('_', ' ').title(),
@@ -82,27 +82,27 @@ def scatter_highlight(df, title_suffix="", genes_to_annotate=None, binary_column
     return fig
 
 def create_pct_ratio_scatter(df, title_suffix=""):
-    """Create scatter plot colored by pct_ratio"""
+    """Create scatter plot colored by pct_ratio_N6"""
     fig = px.scatter(
         df,
         x='MI_with_condition',
-        y='avg_log2FC',
-        color='pct_ratio',
+        y='avg_log2FC_N6',
+        color='pct_ratio_N6',
         color_continuous_scale=px.colors.sequential.Sunset,
         hover_data={
             'gene': df.index, 
-            'p_val_adj': True, 
+            'p_val_adj_N6': True, 
             'Il10': True,
             'Il6': True,
-            'pct_ratio': True,
-            'pct.1': True,
-            'pct.2': True
+            'pct_ratio_N6': True,
+            'pct.1_N6': True,
+            'pct.2_N6': True
         },
         labels={
             'MI_with_condition': 'Mutual Information (condition)', 
-            'avg_log2FC': 'Average log2 Fold Change'
+            'avg_log2FC_N6': 'Average log2 Fold Change'
         },
-        title=f'Scatter plot of MI vs avg_log2FC (colored by pct_ratio) {title_suffix}'
+        title=f'Scatter plot of MI vs avg_log2FC_N6 (colored by pct_ratio_N6) {title_suffix}'
     )
     return fig
 
@@ -110,23 +110,23 @@ def create_volcano_mi_scatter(df, title_suffix=""):
     """Create volcano-style plot colored by MI"""
     fig = px.scatter(
         df,
-        y='p_val_adj_log10',
-        x='avg_log2FC',
+        y='p_val_adj_log10_N6',
+        x='avg_log2FC_N6',
         color='MI_with_condition',
         color_continuous_scale=px.colors.sequential.Sunset,
         hover_data={
             'gene': df.index, 
-            'p_val_adj': True, 
+            'p_val_adj_N6': True, 
             'Il10': True,
             'Il6': True,
-            'pct_ratio': True,
-            'pct.1': True,
-            'pct.2': True
+            'pct_ratio_N6': True,
+            'pct.1_N6': True,
+            'pct.2_N6': True
         },
         labels={
             'MI_with_condition': 'Mutual Information (condition)', 
-            'avg_log2FC': 'Average log2 Fold Change',
-            'p_val_adj_log10': '-log10(adjusted p-value)'
+            'avg_log2FC_N6': 'Average log2 Fold Change',
+            'p_val_adj_log10_N6': '-log10(adjusted p-value)'
         },
         title=f'Volcano plot colored by MI {title_suffix}'
     )
@@ -136,50 +136,50 @@ def create_volcano_il10_scatter(df, title_suffix=""):
     """Create volcano-style plot colored by IL10"""
     fig = px.scatter(
         df,
-        y='p_val_adj_log10',
-        x='avg_log2FC',
+        y='p_val_adj_log10_N6',
+        x='avg_log2FC_N6',
         color='Il10',
         color_continuous_scale=px.colors.sequential.Sunset,
         hover_data={
             'gene': df.index, 
-            'p_val_adj': True, 
+            'p_val_adj_N6': True, 
             'Il10': True,
             'Il6': True,
-            'pct_ratio': True,
-            'pct.1': True,
-            'pct.2': True
+            'pct_ratio_N6': True,
+            'pct.1_N6': True,
+            'pct.2_N6': True
         },
         labels={
             'MI_with_condition': 'Mutual Information (condition)', 
-            'avg_log2FC': 'Average log2 Fold Change',
-            'p_val_adj_log10': '-log10(adjusted p-value)'
+            'avg_log2FC_N6': 'Average log2 Fold Change',
+            'p_val_adj_log10_N6': '-log10(adjusted p-value)'
         },
         title=f'Volcano plot colored by IL10 {title_suffix}'
     )
     return fig
 
 def create_volcano_pct_ratio_scatter(df, title_suffix=""):
-    """Create volcano-style plot colored by pct_ratio"""
+    """Create volcano-style plot colored by pct_ratio_N6"""
     fig = px.scatter(
         df,
-        y='p_val_adj_log10',
-        x='avg_log2FC',
-        color='pct_ratio',
+        y='p_val_adj_log10_N6',
+        x='avg_log2FC_N6',
+        color='pct_ratio_N6',
         color_continuous_scale=px.colors.sequential.Sunset,
         hover_data={
             'gene': df.index, 
-            'p_val_adj': True, 
+            'p_val_adj_N6': True, 
             'Il10': True,
             'Il6': True,
-            'pct_ratio': True,
-            'pct.1': True,
-            'pct.2': True
+            'pct_ratio_N6': True,
+            'pct.1_N6': True,
+            'pct.2_N6': True
         },
         labels={
             'MI_with_condition': 'Mutual Information (condition)', 
-            'avg_log2FC': 'Average log2 Fold Change',
-            'p_val_adj_log10': '-log10(adjusted p-value)'
+            'avg_log2FC_N6': 'Average log2 Fold Change',
+            'p_val_adj_log10_N6': '-log10(adjusted p-value)'
         },
-        title=f'Volcano plot colored by pct_ratio {title_suffix}'
+        title=f'Volcano plot colored by pct_ratio_N6 {title_suffix}'
     )
     return fig

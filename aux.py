@@ -23,33 +23,45 @@ def load_data(file_path):
         st.error(f"Error loading file: {str(e)}")
         return None
 
-def create_mitocarta_scatter(df, title_suffix="", genes_to_annotate=None):
-    """Create scatter plot with MitoCarta genes highlighted in red"""
-    # Use provided genes or default list
-    if genes_to_annotate is None:
-        genes_to_annotate = ['Klra4', 'Jchain', 'Ighg2b', 'Bank1', 'mt-Nd3']
+def scatter_highlight(df, title_suffix="", genes_to_annotate=None, binary_column=None, y='avg_log2FC', x='MI_with_condition'):
+    """Create scatter plot with selected binary column highlighted in different colors"""
+
+    # If no binary column selected, use default MitoCarta
+    if binary_column is None:
+        binary_column = 'is_mitocarta'
+    
+    # Create a combined category column for coloring
+    df_plot = df.copy()
+     
+    # Create category labels
+    df_plot['category'] = 'Other'
+    if binary_column in df.columns:
+        mask = df_plot[binary_column] == 1
+        df_plot.loc[mask, 'category'] = binary_column
+    
+    # Define color mapping
+    color_map = {'Other': 'blue', binary_column: 'red'}
     
     fig = px.scatter(
-        df,
-        x='MI_with_condition',
-        y='avg_log2FC',
-        color=df['is_mitocarta'].map({1: 'MitoCarta', 0: 'Other'}),
-        color_discrete_map={'MitoCarta': 'red', 'Other': 'blue'},
+        df_plot,
+        x=x,
+        y=y,
+        color='category',
+        color_discrete_map=color_map,
         hover_data={
             'gene': df.index, 
             'p_val_adj': True, 
-            'p_val': True, 
-            'is_mitocarta': True,
             'Il10': True,
+            'Il6': True,
             'pct_ratio': True,
             'pct.1': True,
             'pct.2': True
         },
         labels={
-            'MI_with_condition': 'Mutual Information (condition)', 
-            'avg_log2FC': 'Average log2 Fold Change'
+            x: x.replace('_', ' ').title(),
+            y: y.replace('_', ' ').title()
         },
-        title=f'Scatter plot of MI vs avg_log2FC (MitoCarta genes in red) {title_suffix}'
+        title=f'Scatter plot of {x} vs {y} ({binary_column} highlighted) {title_suffix}'
     )
     
     # Add text annotations for selected genes
@@ -57,8 +69,8 @@ def create_mitocarta_scatter(df, title_suffix="", genes_to_annotate=None):
         if gene in df.index:
             row = df.loc[gene]
             fig.add_annotation(
-                x=row['MI_with_condition'],
-                y=row['avg_log2FC'],
+                x=row[x],
+                y=row[y],
                 text=gene,
                 showarrow=True,
                 arrowhead=1,
@@ -80,9 +92,8 @@ def create_pct_ratio_scatter(df, title_suffix=""):
         hover_data={
             'gene': df.index, 
             'p_val_adj': True, 
-            'p_val': True, 
-            'is_mitocarta': True,
             'Il10': True,
+            'Il6': True,
             'pct_ratio': True,
             'pct.1': True,
             'pct.2': True
@@ -106,8 +117,8 @@ def create_volcano_mi_scatter(df, title_suffix=""):
         hover_data={
             'gene': df.index, 
             'p_val_adj': True, 
-            'p_val': True,
             'Il10': True,
+            'Il6': True,
             'pct_ratio': True,
             'pct.1': True,
             'pct.2': True
@@ -132,8 +143,8 @@ def create_volcano_il10_scatter(df, title_suffix=""):
         hover_data={
             'gene': df.index, 
             'p_val_adj': True, 
-            'p_val': True,
             'Il10': True,
+            'Il6': True,
             'pct_ratio': True,
             'pct.1': True,
             'pct.2': True
@@ -158,8 +169,8 @@ def create_volcano_pct_ratio_scatter(df, title_suffix=""):
         hover_data={
             'gene': df.index, 
             'p_val_adj': True, 
-            'p_val': True,
             'Il10': True,
+            'Il6': True,
             'pct_ratio': True,
             'pct.1': True,
             'pct.2': True

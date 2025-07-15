@@ -27,6 +27,10 @@ def main():
         
         if df is not None:
             st.success(f"✅ Successfully loaded data with {len(df)} genes")
+            # fill NaN values in 'p_val_adj' with 1.0
+            df['p_val_adj'] = df['p_val_adj'].fillna(1.0)
+
+
             
             # Display basic info about the dataset
             st.sidebar.subheader("📈 Dataset Info")
@@ -60,7 +64,15 @@ def main():
                 min_value=0.0,
                 max_value=1.0,
                 value=1.0,
-                step=0.01
+                step=0.001
+            )
+            
+            # Regulation filter
+            regulation_filter = st.sidebar.selectbox(
+                "Gene regulation filter",
+                options=["Both", "Up-regulated only", "Down-regulated only"],
+                index=0,
+                help="Filter genes based on their regulation status (avg_log2FC)"
             )
             
             # Gene annotation options
@@ -71,29 +83,11 @@ def main():
             default_genes = []
             # Only keep default genes that are actually in the dataset
             default_genes = [gene for gene in default_genes if gene in available_genes]
-            
-            # Search box for genes
-            gene_search = st.sidebar.text_input(
-                "🔍 Search for genes",
-                placeholder="Type gene name...",
-                help="Search for specific genes to add to annotation list"
-            )
-            
-            # Filter genes based on search
-            if gene_search:
-                filtered_genes = [gene for gene in available_genes if gene_search.lower() in gene.lower()]
-                st.sidebar.write(f"Found {len(filtered_genes)} genes matching '{gene_search}'")
-                if len(filtered_genes) <= 20:  # Show matches if not too many
-                    st.sidebar.write("Matches:", ", ".join(filtered_genes[:10]))
-                    if len(filtered_genes) > 10:
-                        st.sidebar.write("... and more")
-            else:
-                filtered_genes = available_genes
-            
+                        
             # Multiselect for gene annotation
             genes_to_annotate = st.sidebar.multiselect(
                 "Select genes to annotate on plots",
-                options=filtered_genes if gene_search else available_genes,
+                options=available_genes,
                 default=default_genes,
                 help="Choose which genes to label on the scatter plots"
             )
@@ -119,25 +113,93 @@ def main():
                 (df['p_val_adj'] <= pval_max)
             ]
             
+            # Apply regulation filter
+            if regulation_filter == "Up-regulated only":
+                filtered_df = filtered_df[filtered_df['avg_log2FC'] > 0]
+                filtered_df = filtered_df.sort_values(by="avg_log2FC", ascending=False)
+            elif regulation_filter == "Down-regulated only":
+                filtered_df = filtered_df[filtered_df['avg_log2FC'] < 0]
+                filtered_df = filtered_df.sort_values(by="avg_log2FC", ascending=True)
+            # If "Both" is selected, no additional filtering is needed
+            
             st.sidebar.write(f"**Filtered genes:** {len(filtered_df)}")
             
             # Main content
             st.header("📊 Scatter Plots")
+            # Show data preview
+            # print small values as 10-n
+            st.subheader("Data Preview")
+            filtered_df_display = filtered_df.copy()
             
+            # Format small values in 'p_val_adj' as 10^-n (only for display)
+            if 'p_val_adj' in filtered_df_display.columns:
+                filtered_df_display['p_val_adj_formatted'] = filtered_df_display['p_val_adj'].apply(
+                    lambda x: f"10^-{int(-np.log10(x))}" if (x < 0.01 and x > 0) else f"{x:.3f}"
+                )
+                # Remove original column and rename formatted one
+                filtered_df_display = filtered_df_display.drop('p_val_adj', axis=1)
+                filtered_df_display = filtered_df_display.rename(columns={'p_val_adj_formatted': 'p_val_adj'})
+            
+            # Format p_val as 10^-n (only for display)
+            if 'p_val' in filtered_df_display.columns:
+                filtered_df_display['p_val_formatted'] = filtered_df_display['p_val'].apply(
+                    lambda x: f"10^-{int(-np.log10(x))}" if (x < 0.01 and x > 0) else f"{x:.3f}"
+                )
+                # Remove original column and rename formatted one
+                filtered_df_display = filtered_df_display.drop('p_val', axis=1)
+                filtered_df_display = filtered_df_display.rename(columns={'p_val_formatted': 'p_val'})
+
+            # Display the filtered DataFrame
+            st.dataframe(filtered_df_display)
+            # print df size
+            st.write(f"Data size: {filtered_df_display.shape[0]} rows, {filtered_df_display.shape[1]} columns")
+            st.markdown("---")
+
+        
+            
+            # Find all binary columns (columns that contain only 0s and 1s)
+            binary_columns = ['is_mitocarta',
+                                  'decrease_IL10_day7',
+                                  'increase_IL10_day7',
+                                  'decrease_IL10_day3',
+                                  'increase_IL10_day3',
+                                  'proteomics_UP_7day',
+                                  'proteomics_DOWN_7day']
+
+            selected_binary_column = st.selectbox(
+                "Select category to highlight in the scatter plot:",
+                options=binary_columns,
+                index=0,
+                help="Choose which binary category to highlight with a different color in the scatter plot"
+            )
+
             # Create tabs for different plot types
-            tab1, tab2, tab3, tab4, tab5 = st.tabs([
-                "🔴 MitoCarta Genes", 
+            tab0,tab1,tab1_bis,tab2, tab3, tab4, tab5 = st.tabs([
+                "🏷️ avg_log2FC vs log10(pval)", 
+                "🏷️ condition MI vs avg_log2FC", 
+                "🏷️ condition MI vs IL10", 
                 "📊 Pct Ratio", 
                 "🌋 Volcano (MI)", 
                 "🌋 Volcano (IL10)", 
                 "🌋 Volcano (Pct Ratio)"
             ])
             
-            with tab1:
-                st.subheader("MitoCarta Genes Highlighted")
-                fig1 = create_mitocarta_scatter(filtered_df, f"(n={len(filtered_df)})", genes_to_annotate)
-                st.plotly_chart(fig1, use_container_width=True)
+            with tab0:
                 
+                fig1 = scatter_highlight(filtered_df, f"(n={len(filtered_df)})", genes_to_annotate, selected_binary_column,x='avg_log2FC', y='p_val_adj_log10')
+                st.plotly_chart(fig1, use_container_width=True)
+
+
+            with tab1:
+                
+                fig1 = scatter_highlight(filtered_df, f"(n={len(filtered_df)})", genes_to_annotate, selected_binary_column, x='MI_with_condition', y='avg_log2FC')
+                st.plotly_chart(fig1, use_container_width=True)
+
+            with tab1_bis:
+                
+                fig1_bis = scatter_highlight(filtered_df, f"(n={len(filtered_df)})", genes_to_annotate, selected_binary_column, x='MI_with_condition', y='Il10')
+                st.plotly_chart(fig1_bis, use_container_width=True)
+
             with tab2:
                 st.subheader("Colored by Percentage Ratio")
                 fig2 = create_pct_ratio_scatter(filtered_df, f"(n={len(filtered_df)})")
@@ -158,28 +220,11 @@ def main():
                 fig5 = create_volcano_pct_ratio_scatter(filtered_df, f"(n={len(filtered_df)})")
                 st.plotly_chart(fig5, use_container_width=True)
             
-            # Show data preview
-            with st.expander("🔍 Data Preview"):
-                st.dataframe(filtered_df.head(20))
+
                 
     else:
         st.info("👆 Please upload an Excel file to get started")
-        st.markdown("""
-        ### Expected File Format
-        
-        The Excel file should contain merged DEG/MI data with the following columns:
-        - `MI_with_condition`: Mutual Information values
-        - `avg_log2FC`: Average log2 fold change
-        - `is_mitocarta`: Binary indicator for MitoCarta genes (1/0)
-        - `p_val_adj_log10`: -log10 of adjusted p-values
-        - `Il10`: IL10 values
-        - `pct_ratio`: Percentage ratio
-        - `p_val_adj`: Adjusted p-values
-        - `p_val`: Raw p-values
-        - `pct.1`, `pct.2`: Percentage values for conditions
-        
-        Gene names should be in the index.
-        """)
+
 
 if __name__ == "__main__":
     main()

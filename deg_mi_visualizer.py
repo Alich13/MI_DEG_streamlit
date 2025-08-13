@@ -162,7 +162,7 @@ def main():
                 "📊 Pct Ratio", 
                 "🌋 Volcano (MI)", 
                 "🌋 Volcano (IL10)", 
-                "🌋 Volcano (Pct Ratio)"
+                "🌋 Volcano (Pct)"
             ])
             
             with tab0:

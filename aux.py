@@ -161,8 +161,8 @@ def create_volcano_il10_scatter(df, title_suffix=""):
 def create_volcano_pct_ratio_scatter(df, title_suffix=""):
     """Create volcano-style plot colored by pct_ratio_N6"""
 
-    #df["pct_ratio_N6_log"] = np.log10(df["pct_ratio_N6"].replace(0, np.nan))  # Handle zero values for log transformation
-    df["min_pct"] = min(df["pct.1_N6"],df["pct.2_N6"])  # Handle zero values for log transformation
+    
+    df["min_pct"] = df.apply(lambda x : min(x["pct.1_N6"],x["pct.2_N6"]),axis=1)  
 
 
     fig = px.scatter(

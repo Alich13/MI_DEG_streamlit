@@ -197,7 +197,7 @@ def main():
                 st.plotly_chart(fig4, use_container_width=True)
                 
             with tab5:
-                st.subheader("Volcano Plot - Colored by Percentage Ratio")
+                st.subheader("Volcano Plot - Colored min pct")
                 fig5 = create_volcano_pct_ratio_scatter(filtered_df, f"(n={len(filtered_df)})")
                 st.plotly_chart(fig5, use_container_width=True)
             

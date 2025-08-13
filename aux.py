@@ -161,14 +161,15 @@ def create_volcano_il10_scatter(df, title_suffix=""):
 def create_volcano_pct_ratio_scatter(df, title_suffix=""):
     """Create volcano-style plot colored by pct_ratio_N6"""
 
-    df["pct_ratio_N6_log"] = np.log10(df["pct_ratio_N6"].replace(0, np.nan))  # Handle zero values for log transformation
+    #df["pct_ratio_N6_log"] = np.log10(df["pct_ratio_N6"].replace(0, np.nan))  # Handle zero values for log transformation
+    df["min_pct"] = min(df["pct.1"],df["pct.2"])  # Handle zero values for log transformation
 
 
     fig = px.scatter(
         df,
         y='p_val_adj_log10_N6',
         x='avg_log2FC_N6',
-        color='pct_ratio_N6_log',
+        color='min_pct',
         color_continuous_scale=px.colors.sequential.Sunset,
         hover_data={
             'gene': df.index, 
@@ -184,6 +185,6 @@ def create_volcano_pct_ratio_scatter(df, title_suffix=""):
             'avg_log2FC_N6': 'Average log2 Fold Change',
             'p_val_adj_log10_N6': '-log10(adjusted p-value)'
         },
-        title=f'Volcano plot colored by pct_ratio_N6 {title_suffix}'
+        title=f'Volcano plot colored by min_pct {title_suffix}'
     )
     return fig
